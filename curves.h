@@ -26,20 +26,16 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
 
 }
 
-///////////////////////////////////
-
 ///////////////////////rationalBezier//////////////////////////////
+
     int n_under_k(int n, int k)
     {
-        int i, s;
+      // Base Cases
+      if (k==0 || k==n)
+        return 1;
 
-        if (k<0 || k>n) return 0;
-        if (k == 0 || k == n) return 1;
-        if (k > n - k) k = n - k;
-
-        s = 1;
-        for (i = 1; i <= k; ++i) s = s * (n + k - i) / i;
-        return s;
+      // Recur
+      return  n_under_k(n-1, k-1) + n_under_k(n-1, k);
     }
 
     GLfloat Berstein(GLfloat t, int i, int k) {
@@ -49,16 +45,16 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
 
     vec2 calculateRationalBezierPoint(vector<vec2> ControlPoints, vector<GLdouble> weight ,GLfloat t) {
         int n = ControlPoints.size();
-        vec2 Point = { 0, 0 };
+        vec2 Point = {0,0};
         GLfloat divisor = 0;
 
         for (int i = 0; i < n; i++) {
-                divisor += weight[i] * Berstein(t, i, n);
+                divisor += weight[i] * Berstein(t, i, (n-1));
         }
 
         for (int i = 0; i < n; i++) {
                 for (int j = 0; j < 2; j++)
-                        Point[j] += ( weight[i] * ControlPoints[i][j] * Berstein(t, i, n) ) ;
+                        Point[j] += ( weight[i] * ControlPoints[i][j] * Berstein(t, i, (n-1)) ) ;
         }
 
         Point[0] /= divisor;
@@ -74,9 +70,8 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
             vec2 Point = calculateRationalBezierPoint(ControlPoints,weight,t);
             output.push_back(Point);
         }
-
-
     }
+
 
 //////////////////////////rational_bspline_curve////////////////////////////////
     void rationalBspline(std::vector<vec2> controlPoints, std::vector<GLdouble> weights,std::vector<vec2>& output,std::vector<vec2>& breakPoints) {
