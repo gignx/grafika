@@ -82,7 +82,7 @@
     <property name="geometry">
      <rect>
       <x>430</x>
-      <y>20</y>
+      <y>40</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -108,7 +108,7 @@
     <property name="geometry">
      <rect>
       <x>430</x>
-      <y>40</y>
+      <y>60</y>
       <width>121</width>
       <height>21</height>
      </rect>
@@ -125,6 +125,19 @@
       <width>62</width>
       <height>22</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="bspline">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>20</y>
+      <width>85</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Bspline</string>
     </property>
    </widget>
   </widget>

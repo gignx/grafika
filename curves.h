@@ -6,7 +6,7 @@
 #include <QOpenGLWidget>
 using namespace std;
 
-//BEZIER
+//////////////////BEZIER6////////////////////////
 vec2 casteljau(double t,vector<vec2> points)
 {
     for(int i = 1; i < points.size(); i++)
@@ -26,6 +26,7 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
 
 }
 
+//TODO optimise rationalBezier
 ///////////////////////rationalBezier//////////////////////////////
 
     int n_under_k(int n, int k)
@@ -70,6 +71,56 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
             vec2 Point = calculateRationalBezierPoint(ControlPoints,weight,t);
             output.push_back(Point);
         }
+    }
+////////////////////////////////////BSPLINE/////////////////////////////////////////////
+    float GetPoint(int i,int pointSize) {
+        // return 1st point
+        if (i<0) {
+            return 0;
+        }
+        // return last point
+        if (i<pointSize)
+            return i;
+
+        return pointSize - 1;
+    }
+
+    void bSpline(vector<vec2> points,vector<vec2> & output, vector<vec2> &breakPoints) {
+        output.clear();
+        breakPoints.clear();
+        float pointSize = points.size();
+        int lod = 20;
+        vec2 curvepoint;
+
+        for (int start_cv = -3, j = 0;j != pointSize+1;++j, ++start_cv) {
+
+            for (int i = 0;i != lod;++i) {
+
+                float t = (float)i / lod;
+                // inverted t
+                float it = 1.0f - t;
+
+                float b0 = it * it*it / 6.0f;
+                float b1 = (3 * t*t*t - 6 * t*t + 4) / 6.0f;
+                float b2 = (-3 * t*t*t + 3 * t*t + 3 * t + 1) / 6.0f;
+                float b3 = t * t*t / 6.0f;
+
+                curvepoint.x = b0 * points[GetPoint(start_cv + 0,points.size())].x +
+                    b1 * points[GetPoint(start_cv + 1,points.size())].x +
+                    b2 * points[GetPoint(start_cv + 2,points.size())].x +
+                    b3 * points[GetPoint(start_cv + 3,points.size())].x;
+
+                curvepoint.y = b0 * points[GetPoint(start_cv + 0,points.size())].y +
+                    b1 * points[GetPoint(start_cv + 1,points.size())].y +
+                    b2 * points[GetPoint(start_cv + 2,points.size())].y +
+                    b3 * points[GetPoint(start_cv + 3,points.size())].y;
+
+                output.emplace_back(curvepoint);
+            }
+
+            breakPoints.emplace_back(curvepoint);
+        }
+        output.emplace_back(vec2(points[pointSize - 1].x, points[pointSize - 1].y));
     }
 
 

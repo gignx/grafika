@@ -9,15 +9,18 @@ static int modified = -1;
 static bool draw = false;
 static bool drawBezierCurve = false;
 static bool drawRaionalBezierCurve = false;
+static bool drawBsplineCurve = false;
 static bool drawRaionalBsplineCurve = false;
 static vector<vec2> points2D;
 static vector<vec3> points3D;
 static vec2 point2D;
 static vector<vec2> bezierPoints;
 static vector<vec2> rationalBezierPoints;
+static vector<vec2> bSplinePoints;
 static vector<vec2> rationalBsplinePoints;
 static vector<GLdouble> rationalBezierWeight;
 static vector<GLdouble> rationalBsplineWeight;
+static vector<vec2> bSplineBreakpoints;
 static vector<vec2> rationalBsplineBreakpoints;
 static QDoubleSpinBox *rationalBezierSpinbox;
 static QDoubleSpinBox *rationalBsplineSpinbox;
@@ -51,6 +54,13 @@ void GLWidget::paintGL(){
     glClear(GL_COLOR_BUFFER_BIT);
     glLineWidth(2);
     if(draw){
+
+        glColor3f(0.0, 1.0, 0.0);
+        glBegin(GL_LINE_STRIP);
+        for (unsigned long i = 0; i < points2D.size(); i++)
+            glVertex2f(points2D[i].x, points2D[i].y);
+        glEnd();
+
         if (drawBezierCurve) {
             bezier(points2D,bezierPoints);
             glColor3f(0.0, 0.0, 0.0);
@@ -66,6 +76,23 @@ void GLWidget::paintGL(){
             glBegin(GL_LINE_STRIP);
             for(int i = 0;i<rationalBezierPoints.size();i++){
                 glVertex2f(rationalBezierPoints[i].x,rationalBezierPoints[i].y);
+            }
+            glEnd();
+        }
+        if (drawBsplineCurve) {
+            bSpline(points2D,bSplinePoints,bSplineBreakpoints);
+            //TODO fix bspline breakpoints
+            rationalBspline(points2D,rationalBsplineWeight,rationalBsplinePoints,rationalBsplineBreakpoints);
+            glColor3f(0.3, 0.3, 0.7);
+            glBegin(GL_LINE_STRIP);
+            for(int i = 0;i<bSplinePoints.size();i++){
+                glVertex2f(bSplinePoints[i].x,bSplinePoints[i].y);
+            }
+            glEnd();
+
+            glBegin(GL_POINTS);
+            for(int i = 0;i<rationalBsplineBreakpoints.size();i++){
+                glVertex2f(rationalBsplineBreakpoints[i].x,rationalBsplineBreakpoints[i].y);
             }
             glEnd();
         }
@@ -85,11 +112,6 @@ void GLWidget::paintGL(){
 
         }
 
-        glColor3f(0.0, 1.0, 0.0);
-        glBegin(GL_LINE_STRIP);
-        for (unsigned long i = 0; i < points2D.size(); i++)
-            glVertex2f(points2D[i].x, points2D[i].y);
-        glEnd();
     }
 
 
@@ -149,6 +171,13 @@ void GLWidget::bezierCheckBox(int arg1){
         drawBezierCurve = true;
     }else {
         drawBezierCurve = false;
+    }
+}
+void GLWidget::bSplineCheckBox(int arg1){
+    if (arg1) {
+        drawBsplineCurve = true;
+    }else{
+        drawBsplineCurve = false;
     }
 }
 void GLWidget::rationalBezierCheckBox(int arg1){

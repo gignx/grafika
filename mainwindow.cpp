@@ -50,3 +50,8 @@ void MainWindow::on_rationalBsplineparam_valueChanged(double arg1)
 {
     GLWidget::rationalBsplineSpinnerListener(arg1);
 }
+
+void MainWindow::on_bspline_stateChanged(int arg1)
+{
+    GLWidget::bSplineCheckBox(arg1);
+}

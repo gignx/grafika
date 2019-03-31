@@ -30,6 +30,8 @@ private slots:
 
     void on_rationalBsplineparam_valueChanged(double arg1);
 
+    void on_bspline_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
 };

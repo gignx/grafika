@@ -36,6 +36,7 @@ public:
     void static setDraw();
     void static clearDraw();
     void static bezierCheckBox(int arg1);
+    void static bSplineCheckBox(int arg1);
     void static rationalBezierCheckBox(int arg1);
     void static rationalBsplineCheckBox(int arg1);
     void static setspinner(QDoubleSpinBox *arg1,QDoubleSpinBox *arg2);
