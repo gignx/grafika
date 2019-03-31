@@ -81,18 +81,15 @@ void GLWidget::paintGL(){
         }
         if (drawBsplineCurve) {
             bSpline(points2D,bSplinePoints,bSplineBreakpoints);
-            //TODO fix bspline breakpoints
-            rationalBspline(points2D,rationalBsplineWeight,rationalBsplinePoints,rationalBsplineBreakpoints);
             glColor3f(0.3, 0.3, 0.7);
             glBegin(GL_LINE_STRIP);
             for(int i = 0;i<bSplinePoints.size();i++){
                 glVertex2f(bSplinePoints[i].x,bSplinePoints[i].y);
             }
             glEnd();
-
             glBegin(GL_POINTS);
-            for(int i = 0;i<rationalBsplineBreakpoints.size();i++){
-                glVertex2f(rationalBsplineBreakpoints[i].x,rationalBsplineBreakpoints[i].y);
+            for(int i = 0;i<bSplineBreakpoints.size();i++){
+                glVertex2f(bSplineBreakpoints[i].x,bSplineBreakpoints[i].y);
             }
             glEnd();
         }
