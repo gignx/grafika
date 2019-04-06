@@ -31,17 +31,24 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
 
     int n_under_k(int n, int k)
     {
-      // Base Cases
-      if (k==0 || k==n)
-        return 1;
+        int res = 1;
 
-      // Recur
-      return  n_under_k(n-1, k-1) + n_under_k(n-1, k);
+        // Since C(n, k) = C(n, n-k)
+        if ( k > n - k )
+            k = n - k;
+
+        // Calculate value of [n * (n-1) *---* (n-k+1)] / [k * (k-1) *----* 1]
+        for (int i = 0; i < k; ++i)
+        {
+            res *= (n - i);
+            res /= (i + 1);
+        }
+
+        return res;
     }
 
     GLfloat Berstein(GLfloat t, int i, int k) {
-        GLfloat result = n_under_k(k, i) * pow(t, i)*pow((1 - t), (k - i));
-        return result;
+        return n_under_k(k, i) * pow(t, i)*pow((1 - t), (k - i));
     }
 
     vec2 calculateRationalBezierPoint(vector<vec2> ControlPoints, vector<GLdouble> weight ,GLfloat t) {
@@ -50,12 +57,9 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
         GLfloat divisor = 0;
 
         for (int i = 0; i < n; i++) {
-                divisor += weight[i] * Berstein(t, i, (n-1));
-        }
-
-        for (int i = 0; i < n; i++) {
-                for (int j = 0; j < 2; j++)
-                        Point[j] += ( weight[i] * ControlPoints[i][j] * Berstein(t, i, (n-1)) ) ;
+            divisor += weight[i] * Berstein(t, i, (n-1));
+            for (int j = 0; j < 2; j++)
+                Point[j] += ( divisor * ControlPoints[i][j]) ;
         }
 
         Point[0] /= divisor;
@@ -94,7 +98,7 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
 
         for (int start_cv = -3, j = 0;j != pointSize+1;++j, ++start_cv) {
 
-            for (int i = 0;i != lod;++i) {
+            for (int i = 0;i <= lod;++i) {
 
                 float t = (float)i / lod;
                 // inverted t
@@ -186,7 +190,6 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
             }
 
             breakPoints.push_back({currentPoint[0],currentPoint[1]});
-
         }
 
     }
