@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
    ui->setupUi(this);
-   GLWidget::setspinner(ui->rationalBezierParam,ui->rationalBsplineparam);
+   GLWidget::setspinner(ui->rationalBezierParam,ui->rationalBsplineparam,ui->nurbsParam);
 }
 
 MainWindow::~MainWindow()
@@ -54,4 +54,14 @@ void MainWindow::on_rationalBsplineparam_valueChanged(double arg1)
 void MainWindow::on_bspline_stateChanged(int arg1)
 {
     GLWidget::bSplineCheckBox(arg1);
+}
+
+void MainWindow::on_nurbsParam_valueChanged(double arg1)
+{
+    GLWidget::nurbsListener(arg1);
+}
+
+void MainWindow::on_nurbs_stateChanged(int arg1)
+{
+    GLWidget::nurbsCheckBox(arg1);
 }

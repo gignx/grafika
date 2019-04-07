@@ -11,6 +11,7 @@ static bool drawBezierCurve = false;
 static bool drawRaionalBezierCurve = false;
 static bool drawBsplineCurve = false;
 static bool drawRaionalBsplineCurve = false;
+static bool drawNurbs = false;
 static vector<vec2> points2D;
 static vector<vec3> points3D;
 static vec2 point2D;
@@ -18,12 +19,15 @@ static vector<vec2> bezierPoints;
 static vector<vec2> rationalBezierPoints;
 static vector<vec2> bSplinePoints;
 static vector<vec2> rationalBsplinePoints;
+static vector<vec2> nurbsPoints;
 static vector<GLdouble> rationalBezierWeight;
 static vector<GLdouble> rationalBsplineWeight;
+static vector<float> nurbsKnots;
 static vector<vec2> bSplineBreakpoints;
 static vector<vec2> rationalBsplineBreakpoints;
 static QDoubleSpinBox *rationalBezierSpinbox;
 static QDoubleSpinBox *rationalBsplineSpinbox;
+static QDoubleSpinBox *nurbsSpinbox;
 
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent){
@@ -79,6 +83,15 @@ void GLWidget::paintGL(){
             }
             glEnd();
         }
+        if (drawNurbs) {
+            nurbs(points2D,nurbsKnots,nurbsPoints);
+            glColor3f(0.7, 0.3, 0.5);
+            glBegin(GL_LINE_STRIP);
+            for(int i = 0;i<nurbsPoints.size();i++){
+                glVertex2f(nurbsPoints[i].x,nurbsPoints[i].y);
+            }
+            glEnd();
+        }
         if (drawBsplineCurve) {
             bSpline(points2D,bSplinePoints,bSplineBreakpoints);
             glColor3f(0.3, 0.3, 0.7);
@@ -126,6 +139,13 @@ void GLWidget::paintGL(){
 void recalculateWeights(){
     rationalBezierWeight.clear();
     rationalBsplineWeight.clear();
+    nurbsKnots.clear();
+    if (points2D.size()>3) {
+        calculateNurbsKnots(3,points2D.size(),nurbsKnots);
+        for (int i = 0;i<nurbsKnots.size();i++) {
+            cout<<nurbsKnots[i]<<endl;
+        }
+    }
     for(int i = 0;i<points2D.size();i++){
         rationalBezierWeight.push_back(1.0);
         rationalBsplineWeight.push_back(1.0);
@@ -146,9 +166,10 @@ void GLWidget::setDraw(){
     draw = true;
 }
 
-void GLWidget::setspinner(QDoubleSpinBox *arg1,QDoubleSpinBox *arg2){
+void GLWidget::setspinner(QDoubleSpinBox *arg1,QDoubleSpinBox *arg2,QDoubleSpinBox *arg3){
     rationalBezierSpinbox = arg1;
     rationalBsplineSpinbox = arg2;
+    nurbsSpinbox = arg3;
 }
 
 void GLWidget::rationalBezierSpinnerListener(double arg1){
@@ -160,6 +181,19 @@ void GLWidget::rationalBezierSpinnerListener(double arg1){
 void GLWidget::rationalBsplineSpinnerListener(double arg1){
     if (modified!=-1) {
         rationalBsplineWeight[modified] = arg1;
+    }
+}
+
+void GLWidget::nurbsListener(double arg1){
+    if (modified!=-1) {
+        if (modified >1 && modified < points2D.size()-2) {
+            if (arg1>nurbsKnots[modified+1] && arg1<nurbsKnots[modified+3]) {
+                 nurbsKnots[modified+2] = arg1;
+            }
+
+
+        }
+
     }
 }
 
@@ -191,6 +225,13 @@ void GLWidget::rationalBsplineCheckBox(int arg1){
         drawRaionalBsplineCurve = false;
     }
 }
+void GLWidget::nurbsCheckBox(int arg1){
+    if (arg1) {
+        drawNurbs = true;
+    }else{
+        drawNurbs = false;
+    }
+}
 /////////////////////////MOUSE EVENTS//////////////////////////////
 void GLWidget::mouseMoveEvent(QMouseEvent *event){
     if(event->button() == Qt::LeftButton && draw){
@@ -216,6 +257,10 @@ void GLWidget::mousePressEvent(QMouseEvent *event){
         if (modified!=-1) {
             rationalBezierSpinbox->setValue(rationalBezierWeight[modified]);
             rationalBsplineSpinbox->setValue(rationalBsplineWeight[modified]);
+            if (modified >1 && modified < points2D.size()-2) {
+                nurbsSpinbox->setValue(nurbsKnots[modified+2]);
+            }
+
         }
 
         cout<<rationalBezierSpinbox->value()<<endl;

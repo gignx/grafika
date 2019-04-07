@@ -29,23 +29,16 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
 //TODO optimise rationalBezier
 ///////////////////////rationalBezier//////////////////////////////
 
-    int n_under_k(int n, int k)
-    {
-        int res = 1;
+int n_under_k(int n, int k)
+   {
+     // Base Cases
+     if (k==0 || k==n)
+       return 1;
+       int res = 1;
 
-        // Since C(n, k) = C(n, n-k)
-        if ( k > n - k )
-            k = n - k;
-
-        // Calculate value of [n * (n-1) *---* (n-k+1)] / [k * (k-1) *----* 1]
-        for (int i = 0; i < k; ++i)
-        {
-            res *= (n - i);
-            res /= (i + 1);
-        }
-
-        return res;
-    }
+     // Recur
+     return  n_under_k(n-1, k-1) + n_under_k(n-1, k);
+}
 
     GLfloat Berstein(GLfloat t, int i, int k) {
         return n_under_k(k, i) * pow(t, i)*pow((1 - t), (k - i));
@@ -58,8 +51,11 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
 
         for (int i = 0; i < n; i++) {
             divisor += weight[i] * Berstein(t, i, (n-1));
+        }
+
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < 2; j++)
-                Point[j] += ( divisor * ControlPoints[i][j]) ;
+                Point[j] += ( weight[i] * ControlPoints[i][j] * Berstein(t, i, (n-1)) ) ;
         }
 
         Point[0] /= divisor;
@@ -192,6 +188,78 @@ void bezier(vector<vec2> ControlPoints,vector<vec2>& output){
             breakPoints.push_back({currentPoint[0],currentPoint[1]});
         }
 
+    }
+
+
+ //////////////////////////NURBS////////////////////////////////
+    float CoxDeBoor(float u, int i, int k, vector<float> Knots) {
+        if (k == 1)
+        {
+            if (Knots[i] <= u && u <= Knots[i + 1]) {
+                return 1.0f;
+            }
+            return 0.0f;
+        }
+        float Den1 = Knots[i + k - 1] - Knots[i];
+        float Den2 = Knots[i + k] - Knots[i + 1];
+        float Eq1 = 0, Eq2 = 0;
+        if (Den1 > 0) {
+            Eq1 = ((u - Knots[i]) / Den1) * CoxDeBoor(u, i, k - 1, Knots);
+        }
+        if (Den2 > 0) {
+            Eq2 = (Knots[i + k] - u) / Den2 * CoxDeBoor(u, i + 1, k - 1, Knots);
+        }
+        return Eq1 + Eq2;
+    }
+
+
+    void calculateNurbsKnots(int g_degree, int controlPointsSize, std::vector<float> &knots){
+        knots.clear();
+        for (int i = 0; i<g_degree+1; i++) {
+                knots.insert(knots.begin(),0.0f);
+                knots.insert(knots.end(),100.0f);
+        }
+
+        int customKnots = (controlPointsSize - g_degree - 1);
+        float inc = floor(((100.0f/(customKnots+1)) * 100) + .5) / 100;
+
+        for (int i = 0;i<customKnots;i++) {
+            knots.insert(knots.begin()+(g_degree+1+i),knots[g_degree+i] + inc);
+        }
+
+    }
+
+    void nurbs(std::vector<vec2> controlPoints, std::vector<float> knots,std::vector<vec2>& output){
+        output.clear();
+        unsigned int g_num_cvs = controlPoints.size();
+        unsigned int g_degree = 3;
+        unsigned int g_order = g_degree + 1;
+        unsigned int g_num_knots = g_num_cvs + g_order;
+        unsigned int LOD = 100;
+        float t = 0;
+
+        for(int i = 0; i < LOD; ++i){
+            t  = knots[g_num_knots-1] * i / (float)(LOD-1);
+            if(i==LOD-1)
+                t-=0.001f;
+
+            float Outpoint[2] = {0, 0};
+
+            for (unsigned int j = 0; j != g_num_cvs; ++j) {
+
+                // calculate the effect of this point on the curve
+                float Val = CoxDeBoor(t, j, g_order, knots);
+
+                if (Val > 0.001f) {
+
+                    // sum effect of CV on this part of the curve
+                    Outpoint[0] += Val * controlPoints[j].x;
+                    Outpoint[1] += Val * controlPoints[j].y;
+                }
+            }
+
+            output.push_back({Outpoint[0],Outpoint[1]});
+       }
     }
 
 #endif // CURVES_H

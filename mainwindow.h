@@ -32,6 +32,10 @@ private slots:
 
     void on_bspline_stateChanged(int arg1);
 
+    void on_nurbsParam_valueChanged(double arg1);
+
+    void on_nurbs_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
 };

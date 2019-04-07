@@ -39,9 +39,11 @@ public:
     void static bSplineCheckBox(int arg1);
     void static rationalBezierCheckBox(int arg1);
     void static rationalBsplineCheckBox(int arg1);
-    void static setspinner(QDoubleSpinBox *arg1,QDoubleSpinBox *arg2);
+    void static nurbsCheckBox(int arg1);
+    void static setspinner(QDoubleSpinBox *arg1,QDoubleSpinBox *arg2,QDoubleSpinBox *arg3);
     void static rationalBezierSpinnerListener(double arg1);
     void static rationalBsplineSpinnerListener(double arg1);
+    void static nurbsListener(double arg1);
 
 };
 
