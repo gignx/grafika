@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>555</width>
+    <width>600</width>
     <height>400</height>
    </rect>
   </property>
@@ -22,8 +22,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>391</width>
-      <height>401</height>
+      <width>400</width>
+      <height>400</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -42,8 +42,8 @@
    <widget class="QPushButton" name="clear">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>371</y>
+      <x>410</x>
+      <y>360</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -55,8 +55,8 @@
    <widget class="QPushButton" name="draw">
     <property name="geometry">
      <rect>
-      <x>490</x>
-      <y>370</y>
+      <x>520</x>
+      <y>360</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -161,6 +161,19 @@
       <width>62</width>
       <height>22</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>120</y>
+      <width>141</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>3D surface</string>
     </property>
    </widget>
   </widget>

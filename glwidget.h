@@ -10,6 +10,8 @@
 #include <iostream>
 #include <algorithm>
 #include <QDoubleSpinBox>
+#include <QThread>
+#include <QKeyEvent>
 
 using namespace std;
 
@@ -25,11 +27,13 @@ public:
     void initializeGL();
     void paintGL();
 
+///////////////////////////////keyboard events////////////////////////
+
 ///////////////////////////////MOUSE events////////////////////////
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-
+    void keyPressEvent(QKeyEvent *event);
 
 //////////////////////VIEW///////////////////////////
 
@@ -40,6 +44,7 @@ public:
     void static rationalBezierCheckBox(int arg1);
     void static rationalBsplineCheckBox(int arg1);
     void static nurbsCheckBox(int arg1);
+    void static draw3DCheckBox(int arg1);
     void static setspinner(QDoubleSpinBox *arg1,QDoubleSpinBox *arg2,QDoubleSpinBox *arg3);
     void static rationalBezierSpinnerListener(double arg1);
     void static rationalBsplineSpinnerListener(double arg1);
@@ -47,4 +52,11 @@ public:
 
 };
 
+/*
+class MyThread : public QThread {
+public:
+    MyThread();
+    void run();
+};
+*/
 #endif // GLWIDGET_H

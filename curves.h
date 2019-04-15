@@ -4,6 +4,7 @@
 #include <bevgrafmath2017.h>
 #include <vector>
 #include <QOpenGLWidget>
+#include <iostream>
 using namespace std;
 
 //////////////////BEZIER6////////////////////////
@@ -261,5 +262,146 @@ int n_under_k(int n, int k)
             output.push_back({Outpoint[0],Outpoint[1]});
        }
     }
+
+
+
+////////////////////////////////////////////////////3D/////////////////////////////////////////////////////////
+
+    static vec3 CAM;
+    static vec3 P;
+    static vec3 UP;
+    static vec3 W;
+    static vec3 U;
+    static vec3 V;
+    static mat4 N(1.0);
+    static mat4 K(1.0);
+    static mat4 VC(1.0);
+    static mat4 WTV(1.0);
+    static std::vector<vec4> points;
+    static std::vector<vec4> pointsres;
+    //kör sugara amin a cammal megyunk
+    static double r = 5;
+    static double angle = 3.14;
+
+//////////////////BEZIER////////////////////////
+    mat4 VCatrix(){
+        mat4 VC(1.0);
+        VC[2][2] = 0;
+        VC[3][2] = -1.0/3.0;
+
+        return VC;
+    }
+
+    mat4 initWtvMatrix(GLdouble xmin, GLdouble ymin, GLdouble xmax, GLdouble ymax,
+                            GLdouble umin, GLdouble vmin, GLdouble umax, GLdouble vmax)
+    {
+        mat4 A(1.0);
+
+        A[0][0] = (umax - umin) / (xmax - xmin);
+        A[1][1] = (vmax - vmin) / (ymax - ymin);
+        A[0][3] = umin-xmin * A[0][0];
+        A[1][3] = vmin-ymin * A[1][1];
+
+        return A;
+    }
+    void initview(){
+
+        W = {(CAM[0]-P[0])/(float)sqrt(pow(CAM[0]-P[0], 2)+pow(CAM[1]-P[1], 2)+pow(CAM[2]-P[2], 2)),
+            (CAM[1]-P[1])/(float)sqrt(pow(CAM[0]-P[0], 2)+pow(CAM[1]-P[1], 2)+pow(CAM[2]-P[2], 2)),
+            (CAM[2]-P[2])/(float)sqrt(pow(CAM[0]-P[0], 2)+pow(CAM[1]-P[1], 2)+pow(CAM[2]-P[2], 2))};
+
+        U = {(UP[1]*W[2]-UP[2]*W[1])/(float)sqrt(pow((UP[1]*W[2]-UP[2]*W[1]),2)+pow((UP[2]*W[0]-UP[0]*W[2]),2)+pow((UP[0]*W[1]-UP[1]*W[0]),2)),
+            (UP[2]*W[0]-UP[0]*W[2])/(float)sqrt(pow((UP[1]*W[2]-UP[2]*W[1]),2)+pow((UP[2]*W[0]-UP[0]*W[2]),2)+pow((UP[0]*W[1]-UP[1]*W[0]),2)),
+            (UP[0]*W[1]-UP[1]*W[0])/(float)sqrt(pow((UP[1]*W[2]-UP[2]*W[1]),2)+pow((UP[2]*W[0]-UP[0]*W[2]),2)+pow((UP[0]*W[1]-UP[1]*W[0]),2))};
+
+        V = {W[1]*U[2]-W[2]*U[1], W[2]*U[0]-W[0]*U[2], W[0]*U[1]-W[1]*U[0]};
+
+        K[0][0] = U[0];
+        K[0][1] = U[1];
+        K[0][2] = U[2];
+        K[0][3] = -(CAM[0]*U[0]+CAM[1]*U[1]+CAM[2]*U[2]);
+        K[1][0] = V[0];
+        K[1][1] = V[1];
+        K[1][2] = V[2];
+        K[1][3] = -(CAM[0]*V[0]+CAM[1]*V[1]+CAM[2]*V[2]);
+        K[2][0] = W[0];
+        K[2][1] = W[1];
+        K[2][2] = W[2];
+        K[2][3] = -(CAM[0]*W[0]+CAM[1]*W[1]+CAM[2]*W[2]);
+        K[3][0] = 0;
+        K[3][1] = 0;
+        K[3][2] = 0;
+        K[3][3] = 1;
+
+        VC = VCatrix();
+        WTV = initWtvMatrix(-2.5, -2.5, 2.5, 2.5, 0, 0, 400, 400);
+
+        N = WTV * VC;
+
+    }
+
+    vec4 casteljau3d(double t,vector<vec4> points)
+    {
+        for(int i = 1; i < points.size(); i++)
+            for(int j = 0; j < points.size() - i; j++) {
+                points[j].x = (1 - t) * points[j].x + t * points[j + 1].x;
+                points[j].y = (1 - t) * points[j].y + t * points[j + 1].y;
+                points[j].z = (1 - t) * points[j].z + t * points[j + 1].z;
+            }
+        return points[0];
+    }
+    void bezierSurface(vector<vec4> ControlPoints,vector<vector<vec4>>& lines){
+        lines.clear();
+
+        vector<vec4> points;
+        vector<vector<vec4>> tmp;
+        vector<vec4> cpoints;
+
+        for (int i=0;i<4;i++) {
+            cpoints = vector<vec4>(ControlPoints.begin()+(4*i),ControlPoints.begin()+(4*i+4));
+            points.clear();
+            for(GLfloat v = 0; v <= 1; v += 0.01) {
+                points.emplace_back(casteljau3d(v,cpoints));
+            }
+            tmp.push_back(points);
+        }
+
+
+        for (int i = 0;i<tmp[0].size();i=i+3) {
+            cpoints = vector<vec4>{tmp[0][i],tmp[1][i],tmp[2][i],tmp[3][i]};
+            points.clear();
+            for(GLfloat u = 0; u <= 1; u += 0.01) {
+                points.emplace_back(casteljau3d(u,cpoints));
+            }
+            lines.push_back(points);
+        }
+
+
+
+        cpoints.clear();
+        tmp.clear();
+        points.clear();
+        for (int i=0;i<4;i++) {
+            cpoints = vector<vec4>{ControlPoints[i],ControlPoints[i+4],ControlPoints[i+8],ControlPoints[i+12]};
+            points.clear();
+            for(GLfloat v = 0; v <= 1; v += 0.01) {
+                points.emplace_back(casteljau3d(v,cpoints));
+            }
+            tmp.push_back(points);
+        }
+
+
+        for (int i = 0;i<tmp[0].size();i=i+10) {
+            cpoints = vector<vec4>{tmp[0][i],tmp[1][i],tmp[2][i],tmp[3][i]};
+            points.clear();
+            for(GLfloat u = 0; u <= 1; u += 0.01) {
+                points.emplace_back(casteljau3d(u,cpoints));
+            }
+            lines.push_back(points);
+        }
+    }
+
+
+
 
 #endif // CURVES_H

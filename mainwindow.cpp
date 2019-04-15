@@ -65,3 +65,8 @@ void MainWindow::on_nurbs_stateChanged(int arg1)
 {
     GLWidget::nurbsCheckBox(arg1);
 }
+
+void MainWindow::on_checkBox_stateChanged(int arg1)
+{
+    GLWidget::draw3DCheckBox(arg1);
+}
