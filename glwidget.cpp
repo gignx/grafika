@@ -29,6 +29,7 @@ static vector<vec2> rationalBsplineBreakpoints;
 static QDoubleSpinBox *rationalBezierSpinbox;
 static QDoubleSpinBox *rationalBsplineSpinbox;
 static QDoubleSpinBox *nurbsSpinbox;
+static int axis = -1;
 
 
 static vector<vector<vec4>> bezierSurfacePoints;
@@ -178,9 +179,14 @@ void paint3D(){
         glEnd();
     }
 
-    glColor3f (1.0, 0.0, 0.0);
+
     glBegin(GL_POINTS);
     for (int i = 0; i<points.size(); i++) {
+        if(i != modified){
+            glColor3f (1.0, 0.0, 0.0);
+        }else {
+            glColor3f (0.0, 0.0, 0.0);
+        }
         glVertex2d(pointsres[i][0]/pointsres[i][3], pointsres[i][1]/pointsres[i][3]);
     }
     glEnd();
@@ -265,10 +271,7 @@ void GLWidget::nurbsListener(double arg1){
             if (arg1>nurbsKnots[modified+1] && arg1<nurbsKnots[modified+3]) {
                  nurbsKnots[modified+2] = arg1;
             }
-
-
         }
-
     }
 }
 
@@ -319,6 +322,16 @@ void GLWidget::draw3DCheckBox(int arg1){
 /////////////////////////KEYBOARDS EVENTS//////////////////////////////
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
+    if (event->key() == Qt::Key_X) {
+        axis = 1;
+    }
+    if (event->key() == Qt::Key_Y) {
+        axis = 2;
+    }
+    if (event->key() == Qt::Key_Z) {
+        axis = 3;
+    }
+
     if (event->key() == Qt::Key_W) {
         r -= 0.1;
     }
@@ -339,45 +352,107 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
     }
 }
 
+void GLWidget::keyReleaseEvent(QKeyEvent *event){
+    cout<<"released keys"<<endl;
+    axis = -1;
+}
+
 
 /////////////////////////MOUSE EVENTS//////////////////////////////
-void GLWidget::mouseMoveEvent(QMouseEvent *event){
-    if(event->button() == Qt::LeftButton && draw){
-        for (int i = 0; i < points2D.size(); i++) {
-            if (pointpointdist(points2D[i],event->x(),QWidget::height()-event->y())<100) {
-                dragged = i;
+void GLWidget::wheelEvent(QWheelEvent *event){
+    cout<<"wheelevent"<<endl;
+    if(axis>0){
+        if(event->delta()>0){
+            switch (axis) {
+                case 1:
+                    points[modified].x += 0.1;
+                break;
+                case 2:
+                    points[modified].y += 0.1;
+                break;
+                case 3:
+                    points[modified].z += 0.1;
+                break;
+            }
+        }else {
+            switch (axis) {
+                case 1:
+                    points[modified].x -= 0.1;
+                break;
+                case 2:
+                    points[modified].y -= 0.1;
+                break;
+                case 3:
+                    points[modified].z -= 0.1;
+                break;
             }
         }
-        if (dragged!=-1) {
-            points2D[dragged].x = event->x();
-            points2D[dragged].y = QWidget::height()-event->y();
-        }
     }
+
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *event){
+    if (!draw3d) {
+        if(event->button() == Qt::LeftButton && draw){
+            for (int i = 0; i < points2D.size(); i++) {
+                if (pointpointdist(points2D[i],event->x(),QWidget::height()-event->y())<25) {
+                    dragged = i;
+                }
+            }
+            if (dragged!=-1) {
+                points2D[dragged].x = event->x();
+                points2D[dragged].y = QWidget::height()-event->y();
+            }
+        }
+    }else {
+        cout<<"3dmove"<<endl;
+    }
+
 }
 void GLWidget::mousePressEvent(QMouseEvent *event){
-    if(event->button() == Qt::RightButton && draw){
-        for (int i = 0; i < points2D.size(); i++) {
-            if (pointpointdist(points2D[i],event->x(),QWidget::height()-event->y())<100) {
-                modified = i;
-            }
-        }
-
-        if (modified!=-1) {
-            rationalBezierSpinbox->setValue(rationalBezierWeight[modified]);
-            rationalBsplineSpinbox->setValue(rationalBsplineWeight[modified]);
-            if (modified >1 && modified < points2D.size()-2) {
-                nurbsSpinbox->setValue(nurbsKnots[modified+2]);
+    cout<<draw3d<<endl;
+    if (!draw3d) {
+        if(event->button() == Qt::RightButton && draw){
+            for (int i = 0; i < points2D.size(); i++) {
+                if (pointpointdist(points2D[i],event->x(),QWidget::height()-event->y())<25) {
+                    modified = i;
+                }
             }
 
+            if (modified!=-1) {
+                rationalBezierSpinbox->setValue(rationalBezierWeight[modified]);
+                rationalBsplineSpinbox->setValue(rationalBsplineWeight[modified]);
+                if (modified >1 && modified < points2D.size()-2) {
+                    nurbsSpinbox->setValue(nurbsKnots[modified+2]);
+                }
+
+            }
+
+
         }
 
-        cout<<rationalBezierSpinbox->value()<<endl;
-        cout<<modified<<endl;
+        if(event->button() == Qt::LeftButton && !draw){
+            points2D.emplace_back(vec2(event->x(),(QWidget::height()-event->y())));
+            recalculateWeights();
+        }
+
+
+    }else{
+        if(event->button() == Qt::RightButton && draw){
+            for (int i = 0; i < points.size(); i++) {
+                //cout<<"mousex: "<<event->x()<<" mousey: "<<QWidget::height()-event->y()<<endl;
+                //cout<<"pointx: "<<pointsres[i][0]/pointsres[i][3]<<" pointy: "<<pointsres[i][1]/pointsres[i][3]<<endl;
+                if (pointpointdist3d(pointsres[i],event->x(),QWidget::height()-event->y())<25) {
+                    modified = i;
+                    cout<<modified<<endl;
+                }
+            }
+        }
+        if(event->button() == Qt::LeftButton && draw){
+            modified = -1;
+        }
     }
-    if(event->button() == Qt::LeftButton && !draw){
-        points2D.emplace_back(vec2(event->x(),(QWidget::height()-event->y())));
-        recalculateWeights();
-    }
+
 }
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *event){

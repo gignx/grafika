@@ -1945,4 +1945,10 @@ float pointpointdist( vec2 p1, float x, float y) {
     return (p1.x - x)*(p1.x - x) + (p1.y - y)*(p1.y - y);
 }
 
+
+float pointpointdist3d( vec4 p1, float x, float y){
+    vec2 a = {p1[0]/p1[3],p1[1]/p1[3]};
+    return (a.x - x)*(a.x - x) + (a.y - y)*(a.y - y);
+}
+
 #endif // !H___BEVGRAFMATH2017

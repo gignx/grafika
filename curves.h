@@ -304,6 +304,9 @@ int n_under_k(int n, int k)
 
         return A;
     }
+
+
+
     void initview(){
 
         W = {(CAM[0]-P[0])/(float)sqrt(pow(CAM[0]-P[0], 2)+pow(CAM[1]-P[1], 2)+pow(CAM[2]-P[2], 2)),
@@ -376,11 +379,10 @@ int n_under_k(int n, int k)
             lines.push_back(points);
         }
 
-
-
         cpoints.clear();
         tmp.clear();
         points.clear();
+
         for (int i=0;i<4;i++) {
             cpoints = vector<vec4>{ControlPoints[i],ControlPoints[i+4],ControlPoints[i+8],ControlPoints[i+12]};
             points.clear();
